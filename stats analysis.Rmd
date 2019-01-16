@@ -1,0 +1,322 @@
+---
+title: "Stats analysis"
+author: "Yu-Ting Chen"
+date: "December 10, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+```{r Loading data,echo=FALSE}
+library(corrplot)
+library(GGally)
+library(ggplot2)
+library(xtable)
+library(sjPlot)
+library(pastecs)
+library(sjmisc)
+library(sjlabelled)
+data = read.csv("outputV2.csv")
+nrow(data)
+View(data)
+```
+
+
+
+
+
+```{r Clean data}
+#Drop some unused columns
+drop = c('id','date','long','lat','zipcode','neighborhood', 'X','yr_renovated')
+
+data = data[,!(names(data) %in% drop)]
+View(data)
+#rename the columns
+colnames(data)[4] <- "Sqft_of_home"
+colnames(data)[14] <- "Sqft_of_livinge_room_2015"
+colnames(data)[15] <- "Sqft_of_lot_2015"
+colnames(data)[16] <- "Median_Income"
+colnames(data)[17] <- "Mean_Income"
+colnames(data)[18] <- "population"
+colnames(data)[19] <- "people_employed"
+colnames(data)[20] <- "people_educated"
+colnames(data)[21] <- "bachelor_degrees"
+colnames(data)[22] <- "grad_degrees"
+ncol(data)
+nrow(data)
+data_b = data
+#View(data_b)
+data$log_p = log(data$price)
+
+
+data = data[!(data$price %in% boxplot(data$price)$out),]
+data = data[!(data$bedrooms %in% boxplot(data$bedrooms)$out),]
+data = data[!(data$bathrooms %in% boxplot(data$bathrooms)$out),]
+data = data[!(data$sqft_lot %in% boxplot(data$sqft_lot)$out),]
+data = data[!(data$Sqft_of_home %in% boxplot(data$Sqft_of_home)$out),]
+data = data[!(data$floors %in% boxplot(data$floors)$out),]
+data = data[!(data$sqft_above %in% boxplot(data$sqft_above)$out),]
+data = data[!(data$sqft_basement %in% boxplot(data$sqft_basement)$out),]
+data = data[!(data$Sqft_of_livinge_room_2015 %in% boxplot(data$Sqft_of_livinge_room_2015)$out),]
+data = data[!(data$Sqft_of_lot_2015 %in% boxplot(data$Sqft_of_lot_2015)$out),]
+data = data[!(data$Median_Income %in% boxplot(data$Median_Income)$out),]
+data = data[!(data$Mean_Income %in% boxplot(data$Mean_Income)$out),]
+data = data[!(data$population %in% boxplot(data$population)$out),]
+data = data[!(data$people_employed %in% boxplot(data$people_employed)$out),]
+data = data[!(data$people_educated %in% boxplot(data$people_educated)$out),]
+data = data[!(data$bachelor_degrees %in% boxplot(data$bachelor_degrees)$out),]
+data = data[!(data$grad_degrees %in% boxplot(data$grad_degrees)$out),]
+data = na.omit(data)
+
+
+
+
+
+par(mfrow = c(1,2))
+boxplot(data_b$price,data$price, col = "lightgreen", ylab = "price", show.names = T, names = c("Before","After"))
+boxplot(data_b$bathrooms, data$bathrooms, col = "lightgreen", ylab = "bathrooms", show.names = T, names = c("Before","After"))
+boxplot(data_b$bedrooms,data$bedrooms, col = "lightgreen", ylab = "bedrooms", show.names = T, names = c("Before","After"))
+boxplot(data_b$Sqft_of_home,data$Sqft_of_home, col = "lightgreen", ylab = "sqft_living", show.names = T, names = c("Before","After"))
+boxplot(data_b$sqft_lot,data$sqft_lot, col = "lightgreen", ylab = "sqft_lot", show.names = T, names = c("Before","After"),ylim = c(min(data_b$sqft_lot),max(data_b$sqft_lot)))
+boxplot(data_b$floors,data$floors, col = "lightgreen", ylab = "floors", show.names = T, names = c("Before","After"))
+boxplot(data_b$waterfront,data$waterfront, col = "lightgreen", ylab = "waterfront", show.names = T, names = c("Before","After"))
+boxplot(data_b$view,data$view, col = "lightgreen", ylab = "view", show.names = T, names = c("Before","After"))
+boxplot(data_b$condition,data$condition, col = "lightgreen", ylab = "condition", show.names = T, names = c("Before","After"))
+boxplot(data_b$grade,data$grade, col = "lightgreen", ylab = "grade", show.names = T, names = c("Before","After"))
+boxplot(data_b$sqft_above,data$sqft_above, col = "lightgreen", ylab = "sqft_above", show.names = T, names = c("Before","After"))
+boxplot(data_b$sqft_basement,data$sqft_basement, col = "lightgreen", ylab = "sqft_basement", show.names = T, names = c("Before","After"))
+boxplot(data_b$yr_built,data$yr_built, col = "lightgreen", ylab = "yr_built", show.names = T, names = c("Before","After"))
+boxplot(data_b$Sqft_of_livinge_room_2015,data$Sqft_of_livinge_room_2015, col = "lightgreen", ylab = "Sqft_of_livinge_room_2015", show.names = T, names = c("Before","After"))
+boxplot(data_b$Sqft_of_lot_2015,data$Sqft_of_lot_2015, col = "lightgreen", ylab = "sqft_lot15", show.names = T, names = c("Before","After"))
+boxplot(data_b$Median_Income,data$Median_Income, col = "lightgreen", ylab = "median_income", show.names = T, names = c("Before","After"))
+boxplot(data_b$Mean_Income,data$Mean_Income, col = "lightgreen", ylab = "mean_income", show.names = T, names = c("Before","After"))
+boxplot(data_b$population,data$population, col = "lightgreen", ylab = "population", show.names = T, names = c("Before","After"))
+boxplot(data_b$people_employed,data$people_employed, col = "lightgreen", ylab = "people_employed", show.names = T, names = c("Before","After"))
+boxplot(data_b$people_educated,data$people_educated, col = "lightgreen", ylab = "people_educated", show.names = T, names = c("Before","After"))
+boxplot(data_b$bachelor_degrees,data$bachelor_degrees, col = "lightgreen", ylab = "bachelor_degrees", show.names = T, names = c("Before","After"))
+boxplot(data_b$grad_degrees,data$grad_degrees, col = "lightgreen", ylab = "grad_degrees", show.names = T, names = c("Before","After"))
+
+
+
+write.csv(data,"clean_output1.csv")
+```
+
+```{r Load clean data and descriptive data}
+data = read.csv("clean_output1.csv")
+drop = c("log_p","X")
+data = data[,!(names(data) %in% drop)]
+dim(data)
+xtable(round(stat.desc(data[,1:5])[4:9,],2))
+xtable(round(stat.desc(data[,6:10])[4:9,],2))
+xtable(round(stat.desc(data[,11:15])[4:9,],2))
+xtable(round(stat.desc(data[,16:20])[4:9,],2))
+xtable(round(stat.desc(data[,21:22])[4:9,],2))
+
+
+```
+
+
+
+
+```{r Boxplot for explanatory variables and response(Price))}
+ggplot(data, aes(as.factor(bedrooms),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with different numbers of Bedrooms") +
+  labs(x="Number of Bedrooms",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14)) 
+
+
+ggplot(data, aes(as.factor(bathrooms),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with different numbers of Bathrooms") +
+  labs(x="Number of Bathrooms",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+ggplot(data, aes(as.factor(floors),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with different Totel numbers of Floor") +
+  labs(x="Total number of Floor",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+
+ggplot(data, aes(as.factor(grade),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with different Grade") +
+  labs(x="Grade",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+ggplot(data, aes(as.factor(waterfront),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with and without Waterfront") +
+  labs(x="Waterfront",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+ggplot(data, aes(as.factor(view),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with View") +
+  labs(x="View",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+ggplot(data, aes(as.factor(condition),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with Condition") +
+  labs(x="Condition",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+ggplot(data, aes(as.factor(yr_built),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with different Year Built") +
+  labs(x="Year Built",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+ggplot(data, aes(as.factor(grad_degrees),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with number of Graduate Degree") +
+  labs(x="Number of Graduate degrees (by zipcode)",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+ggplot(data, aes(as.factor(bachelor_degrees),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with number of Bachelor Degree") +
+  labs(x="Number of Bachelor degrees (by zipcode)",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+ggplot(data, aes(as.factor(Median_Income),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with Median Income") +
+  labs(x="Median Income (by zipcode)",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+data$Median_Income
+ggplot(data, aes(as.factor(Mean_Income),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with Mean Income") +
+  labs(x="Mean Income (by zipcode)",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+ggplot(data, aes(as.factor(population),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with Population") +
+  labs(x="Population (by zipcode)",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+ggplot(data, aes(as.factor(people_educated),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with Number of People educated") +
+  labs(x="Number of people educated (by zipcode)",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+ggplot(data, aes(as.factor(people_employed),price)) +
+  geom_boxplot(fill="orange", color="skyblue")+
+  ggtitle("Price with Number of People employed") +
+  labs(x="Number of People employed (by zipcode)",y="Price") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14))
+
+```
+
+```{r Original correlation plot}
+matrix = round(cor(data, use = "pairwise.complete.obs"),2)
+cor1 = corrplot(matrix, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 60)
+
+```
+
+```{r Correlation plot after remove high correlated columns}
+matrix[upper.tri(matrix)] <- 0
+diag(matrix) <- 0
+data <- data[,!apply(matrix,2,function(x) any(x >0.9))]
+ncol(data)
+matrix2 = round(cor(data, use = "pairwise.complete.obs"),2)
+cor2 =corrplot(matrix2, type = "upper", order = "hclust",
+               tl.col = "black", tl.srt = 60)
+
+```
+
+```{r Skew data log transformation(before and after)}
+par(mfrow = c(1,2))
+hist(data$price, main = "Histogram of Price", xlab = "Price", col = "orange")
+h = hist(log(data$price), main = "Histogram of Price", xlab = "Price",col = "orange", ylim = c(0,8000))
+x = seq(11, 16, by = 0.05)
+xfit <- seq(min(log(data$price)), max(log(data$price)), length = 40) 
+yfit <- dnorm(xfit, mean = mean(log(data$price)), sd = sd(log(data$price))) 
+yfit <- yfit * diff(h$mids[1:2]) * length(log(data$price)) 
+
+lines(xfit, yfit, col = "black", lwd = 2)
+
+par(mfrow = c(1,2))
+hist(data$sqft_basement, main = "Histogram of sqrt of basement", xlab = "sqrt of basement", col = "skyblue")
+h = hist(log(data$sqft_basement), main = "Histogram of sqrt of basement", xlab = "sqrt of basement",col = "skyblue", ylim = c(0,8000))
+x = seq(1, 8, by = 0.05)
+xfit <- seq(min(is.finite(log(data$sqft_basement))), max(log(data$sqft_basement)), length = 40) 
+yfit <- dnorm(xfit, mean = mean(is.finite(log(data$sqft_basement))), sd = sd(is.finite(log(data$sqft_basement)))) 
+yfit <- yfit * diff(h$mids[1:2]) * length(log(data$sqft_basement)) 
+lines(xfit, yfit, col = "black", lwd = 2)
+
+par(mfrow = c(1,2))
+hist(data$sqft_above, main = "Histogram of sqft above", xlab = "sqft above", col = "lightgreen")
+h = hist(log(data$sqft_above), main = "Histogram of sqrt of basement", xlab = "sqft above",col = "lightgreen", ylim = c(0,8000))
+x = seq(1, 8, by = 0.05)
+xfit <- seq(min(is.finite(log(data$sqft_above))), max(log(data$sqft_above)), length = 40) 
+yfit <- dnorm(xfit, mean = mean(is.finite(log(data$sqft_above))), sd = sd(is.finite(log(data$sqft_above)))) 
+yfit <- yfit * diff(h$mids[1:2]) * length(log(data$sqft_above)) 
+lines(xfit, yfit, col = "black", lwd = 2)
+
+```
+
+
+
+```{r AIC and BIC}
+#Factorize the categorical variables
+data$waterfront = as.factor(data$waterfront)
+data$yr_built = as.factor(data$yr_built)
+data$view = as.factor(data$view)
+data$grade = as.factor(data$grade)
+data$condition = as.factor(data$condition)
+#AIC model selection
+fit_full_rw = lm(price~., data=data)
+fit_null_rw = lm(price~1, data=data)
+F_fit_rw = step(fit_null_rw, scope=list(lower=fit_null_rw,upper=fit_full_rw),
+                direction="forward")
+# Although in the following result show as AIC, the formula is indeed for BIC instead of AIC
+F_fit_bic_rw = step(fit_null_rw, scope=list(lower=fit_null_rw,upper=fit_full_rw), direction="forward", k=log(nrow(data)))
+
+
+```
+
+```{r Regression}
+
+lm1 = glm(price~ grad_degrees + Sqft_of_home + people_educated + view + 
+    grade + condition + bachelor_degrees + yr_built + bathrooms + 
+    Sqft_of_livinge_room_2015 + waterfront + sqft_above + Sqft_of_lot_2015 + 
+    floors,data = data)
+summary(lm1)
+tab_model(lm1, show.se = TRUE, show.std = TRUE, show.stat = TRUE)
+
+
+
+
+```
